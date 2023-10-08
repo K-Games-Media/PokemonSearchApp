@@ -177,7 +177,7 @@ def main():
     window = PokemonSearchApp()
 
     # Set the custom app icon for the taskbar
-    app_icon = QtGui.QIcon('images/pikachu1.ico')  # Adjust the path to your icon file
+    app_icon = QtGui.QIcon('images/pikachu1.ico')
     window.setWindowIcon(app_icon)
 
     window.show()
