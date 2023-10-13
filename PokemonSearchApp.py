@@ -6,11 +6,13 @@ import sys
 import time
 import math
 import ebaysdk
+import requests
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel, QTextBrowser
 from ebaysdk.finding import Connection as Finding
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
+from bs4 import BeautifulSoup
 
 
 class PokemonSearchApp(QWidget):
@@ -146,6 +148,12 @@ class PokemonSearchApp(QWidget):
         # Display the eBay active listings in Column 2
         self.display_ebay_listings(active_listings)
 
+        # Call the FaceToFaceGames search function
+        facetoface_results = self.search_facetofacegames(query)
+
+        # Display the FaceToFaceGames results in the new column
+        self.column5_browser.setPlainText(facetoface_results)
+
     def search_ebay_sold_items(self, query):
         api = Finding(
             appid='KaydenCo-kgamesnc-PRD-91b3fab5b-3aa8915a', config_file=None)
@@ -185,6 +193,29 @@ class PokemonSearchApp(QWidget):
                 retry_delay = math.pow(2, retry_attempt)  # Exponential backoff
                 print(f'Waiting for {retry_delay} seconds before retrying...')
                 time.sleep(retry_delay)
+
+    def search_facetofacegames(self, query):
+        base_url = "https://facetofacegames.com"
+        search_url = f"{base_url}/products/search?q={query}"
+        response = requests.get(search_url)
+
+        if response.status_code != 200:
+            return f"Error {response.status_code}: Unable to fetch data from FaceToFaceGames."
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        products = soup.find_all('div', class_='product-grid-item')
+
+        if not products:
+            return "No products found on FaceToFaceGames for the given query."
+
+        results = []
+        for product in products:
+            title = product.find('h4', class_='card-title')
+            price = product.find('span', class_='price')
+            if title and price:
+                results.append(f"{title.text.strip()} - {price.text.strip()}")
+
+        return "\n".join(results)
 
 
 def main():
