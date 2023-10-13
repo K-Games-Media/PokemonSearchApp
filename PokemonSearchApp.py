@@ -12,6 +12,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 
+
 class PokemonSearchApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -29,18 +30,20 @@ class PokemonSearchApp(QWidget):
         self.search_bar = QLineEdit(self)
         self.search_button = QPushButton('Search', self)
         # self.result_label = QLabel('Search Results:', self)
-        
+
         # Create four columns with labels
         self.column1_label = QLabel('Ebay Sold Items', self)
         self.column2_label = QLabel('Ebay Active Listings', self)
         self.column3_label = QLabel('Hobbiesville', self)
         self.column4_label = QLabel('Face To Face Games', self)
+        self.column5_label = QLabel('K-Games&Collectables', self)
 
         # Create QTextBrowser widgets for each column
         self.column1_browser = QTextBrowser(self)
         self.column2_browser = QTextBrowser(self)
         self.column3_browser = QTextBrowser(self)
         self.column4_browser = QTextBrowser(self)
+        self.column5_browser = QTextBrowser(self)
 
         # Create layouts
         search_layout = QHBoxLayout()
@@ -55,6 +58,7 @@ class PokemonSearchApp(QWidget):
         column2_layout = QVBoxLayout()
         column3_layout = QVBoxLayout()
         column4_layout = QVBoxLayout()
+        column5_layout = QVBoxLayout()
 
         # Add labels and QTextBrowser widgets to the column layouts
         column1_layout.addWidget(self.column1_label)
@@ -65,12 +69,15 @@ class PokemonSearchApp(QWidget):
         column3_layout.addWidget(self.column3_browser)
         column4_layout.addWidget(self.column4_label)
         column4_layout.addWidget(self.column4_browser)
+        column5_layout.addWidget(self.column5_label)
+        column5_layout.addWidget(self.column5_browser)
 
         # Add the column layouts to the main layout
         main_layout.addLayout(column1_layout)
         main_layout.addLayout(column2_layout)
         main_layout.addLayout(column3_layout)
         main_layout.addLayout(column4_layout)
+        main_layout.addLayout(column5_layout)
 
         self.setLayout(main_layout)
 
@@ -101,13 +108,15 @@ class PokemonSearchApp(QWidget):
         """)
 
         # Add the copyright label to the main layout at the bottom
-        main_layout.addWidget(copyright_label, alignment=Qt.AlignCenter | Qt.AlignBottom)
+        main_layout.addWidget(
+            copyright_label, alignment=Qt.AlignCenter | Qt.AlignBottom)
 
     def display_ebay_sold_items(self, items):
         if items:
             # Display only the most recent 10 sold items in Column 1
             recent_items = items[:10]
-            result_text = "\n".join([f"{item.title} - ${item.sellingStatus.currentPrice.value}" for item in recent_items])
+            result_text = "\n".join(
+                [f"{item.title} - ${item.sellingStatus.currentPrice.value}" for item in recent_items])
         else:
             result_text = "No sold items found."
         self.column1_browser.setPlainText(result_text)
@@ -116,7 +125,8 @@ class PokemonSearchApp(QWidget):
         if listings:
             # Display the top 10 most recent eBay listings in Column 2
             recent_listings = listings[:10]
-            result_text = "\n".join([f"{listing.title} - ${listing.sellingStatus.currentPrice.value}" for listing in recent_listings])
+            result_text = "\n".join(
+                [f"{listing.title} - ${listing.sellingStatus.currentPrice.value}" for listing in recent_listings])
         else:
             result_text = "No active eBay listings found."
         self.column2_browser.setPlainText(result_text)
@@ -137,11 +147,13 @@ class PokemonSearchApp(QWidget):
         self.display_ebay_listings(active_listings)
 
     def search_ebay_sold_items(self, query):
-        api = Finding(appid='KaydenCo-kgamesnc-PRD-91b3fab5b-3aa8915a', config_file=None)
-        
+        api = Finding(
+            appid='KaydenCo-kgamesnc-PRD-91b3fab5b-3aa8915a', config_file=None)
+
         for retry_attempt in range(3):  # Try up to 3 times
             try:
-                response = api.execute('findCompletedItems', {'keywords': query})
+                response = api.execute(
+                    'findCompletedItems', {'keywords': query})
                 if response.reply.ack == 'Success':
                     sold_items = response.reply.searchResult.item
                     return sold_items
@@ -155,11 +167,13 @@ class PokemonSearchApp(QWidget):
                 time.sleep(retry_delay)
 
     def search_ebay_active_listings(self, query):
-        api = Finding(appid='KaydenCo-kgamesnc-PRD-91b3fab5b-3aa8915a', config_file=None)
-        
+        api = Finding(
+            appid='KaydenCo-kgamesnc-PRD-91b3fab5b-3aa8915a', config_file=None)
+
         for retry_attempt in range(3):  # Try up to 3 times
             try:
-                response = api.execute('findItemsAdvanced', {'keywords': query})
+                response = api.execute(
+                    'findItemsAdvanced', {'keywords': query})
                 if response.reply.ack == 'Success':
                     active_listings = response.reply.searchResult.item
                     return active_listings
@@ -171,6 +185,7 @@ class PokemonSearchApp(QWidget):
                 retry_delay = math.pow(2, retry_attempt)  # Exponential backoff
                 print(f'Waiting for {retry_delay} seconds before retrying...')
                 time.sleep(retry_delay)
+
 
 def main():
     app = QApplication(sys.argv)
@@ -186,5 +201,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
