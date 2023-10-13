@@ -160,6 +160,12 @@ class PokemonSearchApp(QWidget):
         # Display the Hobbiesville results in the column3_browser
         self.column3_browser.setPlainText(hobbiesville_results)
 
+        # Call the K-Games&Collectables search function
+        kgamescollectables_results = self.search_kgamescollectables(query)
+
+        # Display the K-Games&Collectables results in the column5_browser
+        self.column5_browser.setPlainText(kgamescollectables_results)
+
     def search_ebay_sold_items(self, query):
         api = Finding(
             appid='KaydenCo-kgamesnc-PRD-91b3fab5b-3aa8915a', config_file=None)
@@ -267,6 +273,42 @@ class PokemonSearchApp(QWidget):
 
         if not results:
             return "No products or items found on Hobbiesville for the given query."
+
+        return "\n".join(results)
+
+    def search_kgamescollectables(self, query):
+        base_url = "https://kgamesncollectables.com"
+        search_url = f"{base_url}/search?q={query}"
+        response = requests.get(search_url)
+
+        if response.status_code != 200:
+            return f"Error {response.status_code}: Unable to fetch data from K-Games&Collectables."
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        products = soup.find_all('div', class_='product-grid-item')
+        # Assuming 'item-class' is the correct class for items
+        items = soup.find_all('div', class_='item-class')
+
+        results = []
+
+        for product in products:
+            # Update class if different for products
+            title = product.find('h4', class_='card-title')
+            # Update class if different for products
+            price = product.find('span', class_='price-class')
+            if title and price:
+                results.append(f"{title.text.strip()} - {price.text.strip()}")
+
+        for item in items:
+            # Update class if different for items
+            title = item.find('h4', class_='title-class')
+            # Update class if different for items
+            price = item.find('span', class_='price-class')
+            if title and price:
+                results.append(f"{title.text.strip()} - {price.text.strip()}")
+
+        if not results:
+            return "No products or items found on K-Games&Collectables for the given query."
 
         return "\n".join(results)
 
