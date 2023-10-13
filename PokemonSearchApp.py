@@ -152,7 +152,7 @@ class PokemonSearchApp(QWidget):
         facetoface_results = self.search_facetofacegames(query)
 
         # Display the FaceToFaceGames results in the new column
-        self.column5_browser.setPlainText(facetoface_results)
+        self.column4_browser.setPlainText(facetoface_results)
 
     def search_ebay_sold_items(self, query):
         api = Finding(
