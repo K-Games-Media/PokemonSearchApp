@@ -13,6 +13,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
 
 
 class PokemonSearchApp(QWidget):
@@ -175,10 +176,19 @@ class PokemonSearchApp(QWidget):
         api = Finding(
             appid='KaydenCo-kgamesnc-PRD-91b3fab5b-3aa8915a', config_file=None)
 
+        # Define the time frame for the last 24 hours
+        end_time_to = datetime.now()
+        end_time_from = end_time_to - timedelta(hours=24)
+
         for retry_attempt in range(3):  # Try up to 3 times
             try:
                 response = api.execute(
-                    'findCompletedItems', {'keywords': query})
+                    'findCompletedItems', {
+                        'keywords': query,
+                        'EndTimeFrom': end_time_from.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        'EndTimeTo': end_time_to.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                    })
+
                 if response.reply.ack == 'Success':
                     # Print out the searchResult to understand its structure
                     print(response.reply.searchResult)
@@ -203,10 +213,19 @@ class PokemonSearchApp(QWidget):
         api = Finding(
             appid='KaydenCo-kgamesnc-PRD-91b3fab5b-3aa8915a', config_file=None)
 
+        # Define the time frame for the last 24 hours
+        end_time_to = datetime.now()
+        end_time_from = end_time_to - timedelta(hours=24)
+
         for retry_attempt in range(3):  # Try up to 3 times
             try:
                 response = api.execute(
-                    'findItemsAdvanced', {'keywords': query})
+                    'findItemsAdvanced', {
+                        'keywords': query,
+                        'EndTimeFrom': end_time_from.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+                        'EndTimeTo': end_time_to.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                    })
+
                 if response.reply.ack == 'Success':
                     active_listings = response.reply.searchResult.item
                     return active_listings
