@@ -31,7 +31,12 @@ class PokemonSearchApp(QWidget):
         # Create widgets
         self.search_bar = QLineEdit(self)
         self.search_button = QPushButton('Search', self)
+        self.search_bar = QLineEdit(self)
+        self.search_button = QPushButton('Search', self)
         # self.result_label = QLabel('Search Results:', self)
+
+        # Connect the returnPressed signal of the search_bar to the search method
+        self.search_bar.returnPressed.connect(self.search)
 
         # Create four columns with labels
         self.column1_label = QLabel('Ebay Sold Items', self)
@@ -175,8 +180,16 @@ class PokemonSearchApp(QWidget):
                 response = api.execute(
                     'findCompletedItems', {'keywords': query})
                 if response.reply.ack == 'Success':
-                    sold_items = response.reply.searchResult.item
-                    return sold_items
+                    # Print out the searchResult to understand its structure
+                    print(response.reply.searchResult)
+
+                    # Check if 'item' attribute exists in searchResult
+                    if hasattr(response.reply.searchResult, 'item'):
+                        sold_items = response.reply.searchResult.item
+                        return sold_items
+                    else:
+                        print('No items found in eBay API response.')
+                        return []
                 else:
                     print('eBay API request failed.')
                     return []
