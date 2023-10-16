@@ -172,6 +172,43 @@ class PokemonSearchApp(QWidget):
         # Display the K-Games&Collectables results in the column5_browser
         self.column5_browser.setPlainText(kgamescollectables_results)
 
+    # def search_ebay_sold_items(self, query):
+    #     api = Finding(
+    #         appid='KaydenCo-kgamesnc-PRD-91b3fab5b-3aa8915a', config_file=None)
+
+    #     # Define the time frame for the last 24 hours
+    #     end_time_to = datetime.now()
+    #     end_time_from = end_time_to - timedelta(hours=24)
+
+    #     for retry_attempt in range(3):  # Try up to 3 times
+    #         try:
+    #             response = api.execute(
+    #                 'findCompletedItems', {
+    #                     'keywords': query,
+    #                     'EndTimeFrom': end_time_from.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+    #                     'EndTimeTo': end_time_to.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    #                 })
+
+    #             if response.reply.ack == 'Success':
+    #                 # Print out the searchResult to understand its structure
+    #                 print(response.reply.searchResult)
+
+    #                 # Check if 'item' attribute exists in searchResult
+    #                 if hasattr(response.reply.searchResult, 'item'):
+    #                     sold_items = response.reply.searchResult.item
+    #                     return sold_items
+    #                 else:
+    #                     print('No items found in eBay API response.')
+    #                     return []
+    #             else:
+    #                 print('eBay API request failed.')
+    #                 return []
+    #         except ebaysdk.exception.ConnectionError as e:
+    #             print(f'Error: {e}')
+    #             retry_delay = math.pow(2, retry_attempt)  # Exponential backoff
+    #             print(f'Waiting for {retry_delay} seconds before retrying...')
+    #             time.sleep(retry_delay)
+
     def search_ebay_sold_items(self, query):
         api = Finding(
             appid='KaydenCo-kgamesnc-PRD-91b3fab5b-3aa8915a', config_file=None)
@@ -180,11 +217,15 @@ class PokemonSearchApp(QWidget):
         end_time_to = datetime.now()
         end_time_from = end_time_to - timedelta(hours=24)
 
+        # Add a unique timestamp to bypass potential caching
+        unique_timestamp = datetime.now().strftime('%Y%m%d%H%M%S%f')
+
         for retry_attempt in range(3):  # Try up to 3 times
             try:
                 response = api.execute(
                     'findCompletedItems', {
-                        'keywords': query,
+                        # append the unique timestamp to the query
+                        'keywords': query + unique_timestamp,
                         'EndTimeFrom': end_time_from.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
                         'EndTimeTo': end_time_to.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
                     })
