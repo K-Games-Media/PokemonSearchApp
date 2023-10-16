@@ -5,4 +5,4 @@ An App that will search different sites for information on a card or product que
 To use this app, make sure to pip install the following:
 
 ebaysdk \
-PyQt5 \
+PyQt5 
