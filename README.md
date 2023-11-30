@@ -49,4 +49,4 @@ Contributions to the PokemonSearchApp are welcome. Please ensure to follow the p
 
 ---
 
-### - This project is not affiliated with or endorsed by the official Pokemon brand.
+### This project is not affiliated with or endorsed by the official Pokemon brand.
