@@ -7,6 +7,8 @@ import time
 import math
 import ebaysdk
 import requests
+import subprocess
+import json
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel, QTextBrowser
 from ebaysdk.finding import Connection as Finding
 from PyQt5 import QtGui
@@ -279,111 +281,130 @@ class PokemonSearchApp(QWidget):
                 print(f'Waiting for {retry_delay} seconds before retrying...')
                 time.sleep(retry_delay)
 
+                
     def search_facetofacegames(self, query):
-        base_url = "https://facetofacegames.com"
-        search_url = f"{base_url}/products/search?q={query}"
-        response = requests.get(search_url)
-
-        if response.status_code != 200:
-            return f"Error {response.status_code}: Unable to fetch data from FaceToFaceGames."
-
-        soup = BeautifulSoup(response.content, 'html.parser')
-        products = soup.find_all('div', class_='product-grid-item')
-        # Assuming 'item-class' is the correct class for items
-        items = soup.find_all('div', class_='item-class')
-
-        results = []
-
-        for product in products:
-            title = product.find('h4', class_='card-title')
-            price = product.find('span', class_='price')
-            if title and price:
-                results.append(f"{title.text.strip()} - {price.text.strip()}")
-
-        for item in items:
-            # Update class if different for items
-            title = item.find('h4', class_='title-class')
-            # Update class if different for items
-            price = item.find('span', class_='price-class')
-            if title and price:
-                results.append(f"{title.text.strip()} - {price.text.strip()}")
-
-        if not results:
-            return "No products or items found on FaceToFaceGames for the given query."
-
-        return "\n".join(results)
+        return self.run_js_scrape('facetofacegames', query)
 
     def search_hobbiesville(self, query):
-        base_url = "https://hobbiesville.com"
-        search_url = f"{base_url}/search?q={query}"
-        response = requests.get(search_url)
-
-        if response.status_code != 200:
-            return f"Error {response.status_code}: Unable to fetch data from Hobbiesville."
-
-        soup = BeautifulSoup(response.content, 'html.parser')
-        products = soup.find_all('div', class_='product-grid-item')
-        # Assuming 'item-class' is the correct class for items
-        items = soup.find_all('div', class_='item-class')
-
-        results = []
-
-        for product in products:
-            # Update class if different for products
-            title = product.find('h4', class_='card-title')
-            # Update class if different for products
-            price = product.find('span', class_='price-class')
-            if title and price:
-                results.append(f"{title.text.strip()} - {price.text.strip()}")
-
-        for item in items:
-            # Update class if different for items
-            title = item.find('h4', class_='title-class')
-            # Update class if different for items
-            price = item.find('span', class_='price-class')
-            if title and price:
-                results.append(f"{title.text.strip()} - {price.text.strip()}")
-
-        if not results:
-            return "No products or items found on Hobbiesville for the given query."
-
-        return "\n".join(results)
+        return self.run_js_scrape('hobbiesville', query)
 
     def search_kgamescollectables(self, query):
-        base_url = "https://kgamesncollectables.com"
-        search_url = f"{base_url}/search?q={query}"
-        response = requests.get(search_url)
+        return self.run_js_scrape('kgamescollectables', query)
 
-        if response.status_code != 200:
-            return f"Error {response.status_code}: Unable to fetch data from K-Games&Collectables."
+    def run_js_scrape(self, site, query):
+        try:
+            # Run the Node.js script with subprocess
+            result = subprocess.run(['node', 'scrape_sites.js', site, query], capture_output=True, text=True, check=True)
+            return result.stdout
+        except subprocess.CalledProcessError as e:
+            print(f"Error running script: {e}")
+            return f"Error scraping {site}: {e}"
 
-        soup = BeautifulSoup(response.content, 'html.parser')
-        products = soup.find_all('div', class_='product-grid-item')
-        # Assuming 'item-class' is the correct class for items
-        items = soup.find_all('div', class_='item-class')
+    # def search_facetofacegames(self, query):
+    #     base_url = "https://facetofacegames.com"
+    #     search_url = f"{base_url}/products/search?q={query}"
+    #     response = requests.get(search_url)
 
-        results = []
+    #     if response.status_code != 200:
+    #         return f"Error {response.status_code}: Unable to fetch data from FaceToFaceGames."
 
-        for product in products:
-            # Update class if different for products
-            title = product.find('h4', class_='card-title')
-            # Update class if different for products
-            price = product.find('span', class_='price-class')
-            if title and price:
-                results.append(f"{title.text.strip()} - {price.text.strip()}")
+    #     soup = BeautifulSoup(response.content, 'html.parser')
+    #     products = soup.find_all('div', class_='product-grid-item')
+    #     # Assuming 'item-class' is the correct class for items
+    #     items = soup.find_all('div', class_='item-class')
 
-        for item in items:
-            # Update class if different for items
-            title = item.find('h4', class_='title-class')
-            # Update class if different for items
-            price = item.find('span', class_='price-class')
-            if title and price:
-                results.append(f"{title.text.strip()} - {price.text.strip()}")
+    #     results = []
 
-        if not results:
-            return "No products or items found on K-Games&Collectables for the given query."
+    #     for product in products:
+    #         title = product.find('h4', class_='card-title')
+    #         price = product.find('span', class_='price')
+    #         if title and price:
+    #             results.append(f"{title.text.strip()} - {price.text.strip()}")
 
-        return "\n".join(results)
+    #     for item in items:
+    #         # Update class if different for items
+    #         title = item.find('h4', class_='title-class')
+    #         # Update class if different for items
+    #         price = item.find('span', class_='price-class')
+    #         if title and price:
+    #             results.append(f"{title.text.strip()} - {price.text.strip()}")
+
+    #     if not results:
+    #         return "No products or items found on FaceToFaceGames for the given query."
+
+    #     return "\n".join(results)
+
+    # def search_hobbiesville(self, query):
+    #     base_url = "https://hobbiesville.com"
+    #     search_url = f"{base_url}/search?q={query}"
+    #     response = requests.get(search_url)
+
+    #     if response.status_code != 200:
+    #         return f"Error {response.status_code}: Unable to fetch data from Hobbiesville."
+
+    #     soup = BeautifulSoup(response.content, 'html.parser')
+    #     products = soup.find_all('div', class_='product-grid-item')
+    #     # Assuming 'item-class' is the correct class for items
+    #     items = soup.find_all('div', class_='item-class')
+
+    #     results = []
+
+    #     for product in products:
+    #         # Update class if different for products
+    #         title = product.find('h4', class_='card-title')
+    #         # Update class if different for products
+    #         price = product.find('span', class_='price-class')
+    #         if title and price:
+    #             results.append(f"{title.text.strip()} - {price.text.strip()}")
+
+    #     for item in items:
+    #         # Update class if different for items
+    #         title = item.find('h4', class_='title-class')
+    #         # Update class if different for items
+    #         price = item.find('span', class_='price-class')
+    #         if title and price:
+    #             results.append(f"{title.text.strip()} - {price.text.strip()}")
+
+    #     if not results:
+    #         return "No products or items found on Hobbiesville for the given query."
+
+    #     return "\n".join(results)
+
+    # def search_kgamescollectables(self, query):
+    #     base_url = "https://kgamesncollectables.com"
+    #     search_url = f"{base_url}/search?q={query}"
+    #     response = requests.get(search_url)
+
+    #     if response.status_code != 200:
+    #         return f"Error {response.status_code}: Unable to fetch data from K-Games&Collectables."
+
+    #     soup = BeautifulSoup(response.content, 'html.parser')
+    #     products = soup.find_all('div', class_='product-grid-item')
+    #     # Assuming 'item-class' is the correct class for items
+    #     items = soup.find_all('div', class_='item-class')
+
+    #     results = []
+
+    #     for product in products:
+    #         # Update class if different for products
+    #         title = product.find('h4', class_='card-title')
+    #         # Update class if different for products
+    #         price = product.find('span', class_='price-class')
+    #         if title and price:
+    #             results.append(f"{title.text.strip()} - {price.text.strip()}")
+
+    #     for item in items:
+    #         # Update class if different for items
+    #         title = item.find('h4', class_='title-class')
+    #         # Update class if different for items
+    #         price = item.find('span', class_='price-class')
+    #         if title and price:
+    #             results.append(f"{title.text.strip()} - {price.text.strip()}")
+
+    #     if not results:
+    #         return "No products or items found on K-Games&Collectables for the given query."
+
+    #     return "\n".join(results)
 
 
 def main():
